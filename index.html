@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick ATS Matcher & Career Toolkit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .code-font { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased flex flex-col">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center shadow-lg shadow-brand-500/20 text-white font-bold text-xl">
+          ⚡
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+            Quick ATS Scanner
+          </h1>
+          <p class="text-xs text-slate-400">Score Match • Cover Letter • Recruiter Outreach</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          AI Ready (OpenRouter)
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Input Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Resume Card -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 font-semibold text-sm">1</span>
+            <h2 class="font-bold text-white text-base">Your Resume</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="cursor-pointer text-xs font-medium px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-indigo-200 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              Upload PDF
+              <input type="file" id="resumeFileInput" accept=".pdf" class="hidden" onchange="handleFileUpload(event)">
+            </label>
+            <button onclick="clearResume()" class="text-xs text-slate-500 hover:text-slate-300 transition-colors">Clear</button>
+          </div>
+        </div>
+
+        <div class="relative flex-1">
+          <textarea id="resumeText" rows="13" 
+            placeholder="Paste your plain text resume here, or click 'Upload PDF' above..."
+            class="w-full h-full p-4 bg-slate-950/70 border border-slate-800 rounded-xl text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all resize-none text-sm leading-relaxed"></textarea>
+          <div id="uploadStatus" class="hidden absolute top-2 right-2 text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-md border border-indigo-500/30"></div>
+        </div>
+        <div class="flex justify-between items-center mt-3 text-xs text-slate-500">
+          <span id="resumeWordCount">0 words</span>
+          <span>Tip: PDF text extraction auto-populates here</span>
+        </div>
+      </div>
+
+      <!-- Job Description Card -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 font-semibold text-sm">2</span>
+            <h2 class="font-bold text-white text-base">Job Description (JD)</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="clearJD()" class="text-xs text-slate-500 hover:text-slate-300 transition-colors">Clear</button>
+          </div>
+        </div>
+
+        <div class="relative flex-1">
+          <textarea id="jdText" rows="13" 
+            placeholder="Paste the target job description text here (requirements, responsibilities, role summary)..."
+            class="w-full h-full p-4 bg-slate-950/70 border border-slate-800 rounded-xl text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all resize-none text-sm leading-relaxed"></textarea>
+        </div>
+        <div class="flex justify-between items-center mt-3 text-xs text-slate-500">
+          <span id="jdWordCount">0 words</span>
+          <span>Paste raw text from LinkedIn, Indeed, or company site</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Action Bar -->
+    <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex flex-wrap items-center justify-center sm:justify-between gap-4 shadow-xl">
+      <div class="text-xs text-slate-400 font-medium">
+        Select an action to run using your connected OpenRouter AI:
+      </div>
+      <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+        <button id="btnAts" onclick="runAction('ats')" class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-semibold rounded-xl text-sm transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2">
+          <span>🎯</span> Check ATS Score
+        </button>
+        <button id="btnCoverLetter" onclick="runAction('cover_letter')" class="flex-1 sm:flex-none px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-2">
+          <span>📝</span> Cover Letter
+        </button>
+        <button id="btnOutreach" onclick="runAction('outreach')" class="flex-1 sm:flex-none px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-2">
+          <span>💬</span> Outreach Message
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingBox" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center space-y-4">
+      <div class="inline-block w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      <p id="loadingMessage" class="text-slate-300 font-medium text-sm">Analyzing ATS match...</p>
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsSection" class="hidden space-y-6">
+
+      <!-- Navigation Tabs for Results -->
+      <div class="flex border-b border-slate-800 gap-6">
+        <button id="tabAtsBtn" onclick="switchResultTab('ats')" class="pb-3 text-sm font-semibold border-b-2 border-brand-500 text-brand-400 flex items-center gap-2">
+          🎯 ATS Score Report
+        </button>
+        <button id="tabCoverBtn" onclick="switchResultTab('cover')" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2">
+          📝 Tailored Cover Letter
+        </button>
+        <button id="tabOutreachBtn" onclick="switchResultTab('outreach')" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2">
+          💬 Recruiter Outreach
+        </button>
+      </div>
+
+      <!-- Tab 1: ATS Report -->
+      <div id="tabAtsContent" class="space-y-6">
+        <!-- Top Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Overall Score Card -->
+          <div class="bg-gradient-to-br from-slate-900 to-slate-900/60 border border-slate-800 rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-lg">
+            <span class="text-xs uppercase font-bold tracking-wider text-slate-400 mb-2">Overall ATS Match</span>
+            <div id="atsScoreValue" class="text-5xl font-extrabold text-brand-400 my-1 font-mono">0%</div>
+            <div id="atsVerdictBadge" class="mt-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              Evaluating...
+            </div>
+          </div>
+
+          <!-- Summary & Sub-scores -->
+          <div class="md:col-span-3 bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-lg flex flex-col justify-between">
+            <div>
+              <h3 class="text-xs uppercase font-bold tracking-wider text-slate-400 mb-2">Executive Summary</h3>
+              <p id="atsSummaryText" class="text-sm text-slate-300 leading-relaxed"></p>
+            </div>
+
+            <!-- Subscores Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-800/80">
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-slate-400">Keywords</span>
+                  <span id="scoreKw" class="font-mono text-indigo-400 font-bold">0%</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div id="barKw" class="h-full bg-indigo-500 rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-slate-400">Skills</span>
+                  <span id="scoreSkills" class="font-mono text-indigo-400 font-bold">0%</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div id="barSkills" class="h-full bg-indigo-500 rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-slate-400">Experience</span>
+                  <span id="scoreExp" class="font-mono text-indigo-400 font-bold">0%</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div id="barExp" class="h-full bg-indigo-500 rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-slate-400">Title Match</span>
+                  <span id="scoreTitle" class="font-mono text-indigo-400 font-bold">0%</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div id="barTitle" class="h-full bg-indigo-500 rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Sub-Score Breakdown (What Affected It & How to Improve) -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-lg">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="font-bold text-sm text-indigo-400 flex items-center gap-2">
+              <span>🔬</span> Detailed ATS Diagnostic: What Affected Each Score & How to Improve
+            </h3>
+            <span class="text-xs text-slate-500 font-mono">Algorithm Breakdown</span>
+          </div>
+          <div id="subScoreDetailsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- Keywords Analysis Columns -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Matched Keywords -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-sm text-emerald-400 flex items-center gap-2">
+                <span>✓</span> Matched Keywords Found
+              </h3>
+              <span id="matchedCount" class="text-xs text-slate-400 font-mono">0 keywords</span>
+            </div>
+            <div id="matchedKeywordsContainer" class="flex flex-wrap gap-2 pt-2"></div>
+          </div>
+
+          <!-- Missing Keywords -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-sm text-rose-400 flex items-center gap-2">
+                <span>✕</span> Missing Critical Keywords
+              </h3>
+              <span id="missingCount" class="text-xs text-slate-400 font-mono">0 keywords</span>
+            </div>
+            <div id="missingKeywordsContainer" class="flex flex-wrap gap-2 pt-2"></div>
+          </div>
+        </div>
+
+        <!-- Actionable Recommendations -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+          <h3 class="font-bold text-sm text-amber-400 flex items-center gap-2">
+            <span>💡</span> How to Beat This ATS (Recommendations)
+          </h3>
+          <ul id="recommendationsList" class="space-y-2 text-sm text-slate-300 list-disc list-inside leading-relaxed"></ul>
+        </div>
+      </div>
+
+      <!-- Tab 2: Cover Letter -->
+      <div id="tabCoverContent" class="hidden space-y-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div>
+              <h3 class="font-bold text-white text-base">Tailored Cover Letter</h3>
+              <p class="text-xs text-slate-400">Anchored directly to the JD requirements and candidate's experience</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="copyToClipboard('coverLetterText')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 shadow-sm">
+                📋 Copy
+              </button>
+              <button onclick="downloadCoverLetterPdf()" class="px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 rounded-lg text-xs font-medium transition-all flex items-center gap-1">
+                📄 PDF
+              </button>
+              <button onclick="downloadCoverLetterDocx()" class="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 rounded-lg text-xs font-medium transition-all flex items-center gap-1">
+                📝 DOCX
+              </button>
+              <button onclick="downloadText('coverLetterText', 'Cover_Letter.txt')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-medium transition-all">
+                ⬇ TXT
+              </button>
+            </div>
+          </div>
+          <div id="coverLetterText" class="p-6 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-200 text-sm leading-relaxed whitespace-pre-wrap font-sans">
+            Click "Generate Cover Letter" to produce a tailored letter.
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Outreach Message -->
+      <div id="tabOutreachContent" class="hidden space-y-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div>
+              <h3 class="font-bold text-white text-base">Recruiter & Hiring Manager Outreach</h3>
+              <p class="text-xs text-slate-400">Short, conversational, high-converting messages for LinkedIn or email</p>
+            </div>
+            <button onclick="copyToClipboard('outreachMessageText')" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 shadow-sm">
+              📋 Copy Messages
+            </button>
+          </div>
+          <div id="outreachMessageText" class="p-6 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-200 text-sm leading-relaxed whitespace-pre-wrap font-sans">
+            Click "Generate Outreach Message" to create messages.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
+    Quick ATS Tool • Powered by OpenRouter AI & Fast Local Parser
+  </footer>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 transition-all duration-300 z-50 bg-indigo-600 text-white px-4 py-2.5 rounded-xl shadow-xl text-xs font-medium flex items-center gap-2">
+    <span>✓</span> <span id="toastMsg">Copied!</span>
+  </div>
+
+  <script>
+    // Word counts
+    const resumeTextEl = document.getElementById('resumeText');
+    const jdTextEl = document.getElementById('jdText');
+    const resumeWordCountEl = document.getElementById('resumeWordCount');
+    const jdWordCountEl = document.getElementById('jdWordCount');
+
+    function updateCounts() {
+      const rw = resumeTextEl.value.trim() ? resumeTextEl.value.trim().split(/\s+/).length : 0;
+      const jdw = jdTextEl.value.trim() ? jdTextEl.value.trim().split(/\s+/).length : 0;
+      resumeWordCountEl.innerText = `${rw} words`;
+      jdWordCountEl.innerText = `${jdw} words`;
+    }
+    resumeTextEl.addEventListener('input', updateCounts);
+    jdTextEl.addEventListener('input', updateCounts);
+
+    function clearResume() {
+      resumeTextEl.value = '';
+      updateCounts();
+    }
+    function clearJD() {
+      jdTextEl.value = '';
+      updateCounts();
+    }
+
+    // PDF Upload
+    async function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const uploadStatus = document.getElementById('uploadStatus');
+      uploadStatus.innerText = 'Extracting PDF...';
+      uploadStatus.classList.remove('hidden');
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const resp = await fetch('/api/extract-pdf', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          resumeTextEl.value = data.text;
+          updateCounts();
+          showToast(`Extracted ${file.name} successfully!`);
+        } else {
+          alert(data.detail || 'Failed to extract text from PDF.');
+        }
+      } catch (err) {
+        alert('Error uploading PDF: ' + err.message);
+      } finally {
+        uploadStatus.classList.add('hidden');
+        event.target.value = '';
+      }
+    }
+
+    // Result tabs
+    function switchResultTab(tab) {
+      document.getElementById('tabAtsBtn').className = tab === 'ats' 
+        ? 'pb-3 text-sm font-semibold border-b-2 border-brand-500 text-brand-400 flex items-center gap-2'
+        : 'pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2';
+      document.getElementById('tabCoverBtn').className = tab === 'cover' 
+        ? 'pb-3 text-sm font-semibold border-b-2 border-brand-500 text-brand-400 flex items-center gap-2'
+        : 'pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2';
+      document.getElementById('tabOutreachBtn').className = tab === 'outreach' 
+        ? 'pb-3 text-sm font-semibold border-b-2 border-brand-500 text-brand-400 flex items-center gap-2'
+        : 'pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2';
+
+      document.getElementById('tabAtsContent').classList.toggle('hidden', tab !== 'ats');
+      document.getElementById('tabCoverContent').classList.toggle('hidden', tab !== 'cover');
+      document.getElementById('tabOutreachContent').classList.toggle('hidden', tab !== 'outreach');
+    }
+
+    // Run actions
+    async function runAction(action) {
+      const resume = resumeTextEl.value.trim();
+      const jd = jdTextEl.value.trim();
+
+      if (!resume) {
+        alert('Please paste or upload your resume first.');
+        return;
+      }
+      if (!jd) {
+        alert('Please paste the target job description.');
+        return;
+      }
+
+      const loadingBox = document.getElementById('loadingBox');
+      const loadingMessage = document.getElementById('loadingMessage');
+      const resultsSection = document.getElementById('resultsSection');
+
+      loadingBox.classList.remove('hidden');
+      if (action === 'ats') loadingMessage.innerText = 'Analyzing ATS match & extracting critical keywords...';
+      if (action === 'cover_letter') loadingMessage.innerText = 'Crafting customized cover letter...';
+      if (action === 'outreach') loadingMessage.innerText = 'Generating LinkedIn & recruiter outreach messages...';
+
+      try {
+        if (action === 'ats') {
+          const resp = await fetch('/api/calculate-ats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ resume_text: resume, job_description: jd })
+          });
+          const data = await resp.json();
+          if (!resp.ok) throw new Error(data.detail || 'ATS Calculation failed');
+
+          renderAtsResults(data);
+          resultsSection.classList.remove('hidden');
+          switchResultTab('ats');
+          resultsSection.scrollIntoView({ behavior: 'smooth' });
+        } 
+        else if (action === 'cover_letter') {
+          const resp = await fetch('/api/generate-cover-letter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ resume_text: resume, job_description: jd })
+          });
+          const data = await resp.json();
+          if (!resp.ok) throw new Error(data.detail || 'Cover Letter generation failed');
+
+          document.getElementById('coverLetterText').innerText = data.cover_letter;
+          resultsSection.classList.remove('hidden');
+          switchResultTab('cover');
+          resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        else if (action === 'outreach') {
+          const resp = await fetch('/api/generate-outreach', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ resume_text: resume, job_description: jd })
+          });
+          const data = await resp.json();
+          if (!resp.ok) throw new Error(data.detail || 'Outreach generation failed');
+
+          document.getElementById('outreachMessageText').innerText = data.outreach_message;
+          resultsSection.classList.remove('hidden');
+          switchResultTab('outreach');
+          resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      } catch (err) {
+        alert('Action Failed: ' + err.message);
+      } finally {
+        loadingBox.classList.add('hidden');
+      }
+    }
+
+    function renderAtsResults(data) {
+      const score = data.overall_score || 0;
+      const scoreEl = document.getElementById('atsScoreValue');
+      scoreEl.innerText = `${score}%`;
+
+      // Color coding
+      if (score >= 80) {
+        scoreEl.className = 'text-5xl font-extrabold text-emerald-400 my-1 font-mono';
+      } else if (score >= 60) {
+        scoreEl.className = 'text-5xl font-extrabold text-amber-400 my-1 font-mono';
+      } else {
+        scoreEl.className = 'text-5xl font-extrabold text-rose-400 my-1 font-mono';
+      }
+
+      document.getElementById('atsVerdictBadge').innerText = data.verdict || 'Scored';
+      document.getElementById('atsSummaryText').innerText = data.summary || 'Analysis complete.';
+
+      // Sub-scores
+      const subs = data.sub_scores || {};
+      const kw = subs.keyword_match || 0;
+      const sk = subs.skills_coverage || 0;
+      const exp = subs.experience_match || 0;
+      const ti = subs.job_title_match || 0;
+
+      document.getElementById('scoreKw').innerText = `${kw}%`;
+      document.getElementById('barKw').style.width = `${kw}%`;
+      document.getElementById('scoreSkills').innerText = `${sk}%`;
+      document.getElementById('barSkills').style.width = `${sk}%`;
+      document.getElementById('scoreExp').innerText = `${exp}%`;
+      document.getElementById('barExp').style.width = `${exp}%`;
+      document.getElementById('scoreTitle').innerText = `${ti}%`;
+      document.getElementById('barTitle').style.width = `${ti}%`;
+
+      // Deep sub-score diagnostic
+      const detailsContainer = document.getElementById('subScoreDetailsContainer');
+      detailsContainer.innerHTML = '';
+      const details = data.sub_score_details || {};
+      const categories = [
+        { key: 'keywords', title: 'Keywords Match', score: kw, icon: '🔑', weight: '40%' },
+        { key: 'skills', title: 'Skills Coverage', score: sk, icon: '⚡', weight: '25%' },
+        { key: 'experience', title: 'Experience & Seniority', score: exp, icon: '📈', weight: '20%' },
+        { key: 'job_title', title: 'Job Title Alignment', score: ti, icon: '🏷️', weight: '15%' }
+      ];
+
+      categories.forEach(cat => {
+        const item = details[cat.key] || {};
+        const what = item.what_affected_it || 'Evaluated based on standard ATS keyword extraction.';
+        const how = item.how_to_improve || 'Ensure terms appear verbatim in your bullet points.';
+        const card = document.createElement('div');
+        card.className = 'bg-slate-950/70 border border-slate-800/80 rounded-xl p-4 flex flex-col justify-between space-y-3';
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-bold text-xs text-slate-200 flex items-center gap-1.5">
+                <span>${cat.icon}</span> ${cat.title}
+              </span>
+              <span class="font-mono text-xs font-bold text-brand-400 bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 rounded-md">${item.score || cat.score}% (weight: ${cat.weight})</span>
+            </div>
+            <div class="space-y-2 text-xs">
+              <p class="text-slate-300 leading-relaxed"><strong class="text-slate-400">What affected it:</strong> ${what}</p>
+              <p class="text-emerald-300/90 leading-relaxed"><strong class="text-emerald-400">How to improve:</strong> ${how}</p>
+            </div>
+          </div>
+        `;
+        detailsContainer.appendChild(card);
+      });
+
+      // Matched keywords
+      const matchedBox = document.getElementById('matchedKeywordsContainer');
+      matchedBox.innerHTML = '';
+      const matched = data.matched_keywords || [];
+      document.getElementById('matchedCount').innerText = `${matched.length} keywords`;
+      matched.forEach(kw => {
+        const span = document.createElement('span');
+        span.className = 'px-2.5 py-1 text-xs rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-medium';
+        span.innerText = kw;
+        matchedBox.appendChild(span);
+      });
+
+      // Missing keywords
+      const missingBox = document.getElementById('missingKeywordsContainer');
+      missingBox.innerHTML = '';
+      const missing = data.missing_keywords || [];
+      document.getElementById('missingCount').innerText = `${missing.length} keywords`;
+      missing.forEach(kw => {
+        const span = document.createElement('span');
+        span.className = 'px-2.5 py-1 text-xs rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 font-medium';
+        span.innerText = kw;
+        missingBox.appendChild(span);
+      });
+
+      // Recommendations
+      const recList = document.getElementById('recommendationsList');
+      recList.innerHTML = '';
+      (data.recommendations || []).forEach(r => {
+        const li = document.createElement('li');
+        li.innerText = r;
+        recList.appendChild(li);
+      });
+    }
+
+    function copyToClipboard(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied to clipboard!');
+      });
+    }
+
+    function downloadText(elementId, filename) {
+      const text = document.getElementById(elementId).innerText;
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function downloadCoverLetterDocx() {
+      const text = document.getElementById('coverLetterText').innerText;
+      if (!text || text.includes('Click "Generate Cover Letter"')) {
+        alert('Please generate a cover letter first.');
+        return;
+      }
+      try {
+        const resp = await fetch('/api/download-cover-letter-docx', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: text, filename: 'Cover_Letter.docx' })
+        });
+        if (!resp.ok) throw new Error('Failed to generate DOCX document.');
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Cover_Letter.docx';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Downloaded Word (.docx) file!');
+      } catch (err) {
+        alert('Download error: ' + err.message);
+      }
+    }
+
+    async function downloadCoverLetterPdf() {
+      const text = document.getElementById('coverLetterText').innerText;
+      if (!text || text.includes('Click "Generate Cover Letter"')) {
+        alert('Please generate a cover letter first.');
+        return;
+      }
+      try {
+        const resp = await fetch('/api/download-cover-letter-pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: text, filename: 'Cover_Letter.pdf' })
+        });
+        if (!resp.ok) throw new Error('Failed to generate PDF document.');
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Cover_Letter.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Downloaded PDF file!');
+      } catch (err) {
+        alert('Download error: ' + err.message);
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+  </script>
+</body>
+</html>
